@@ -1,0 +1,47 @@
+{% load static %}
+{% load form_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prueba SB Admin 2</title>
+  <link href="{% static 'sbadmin2/css/sb-admin-2.min.css' %}" rel="stylesheet">
+</head>
+<body class="bg-gradient-primary">
+
+  <div class="container-fluid mt-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <div class="card shadow border-left-info">
+          <div class="card-header bg-info text-white font-weight-bold">
+            ✅ SB Admin 2 funcionando
+          </div>
+          <div class="card-body">
+            <p class="mb-4">Si ves esta tarjeta con colores, ¡Bootstrap y SB Admin 2 están funcionando correctamente!</p>
+
+            <form method="POST" autocomplete="off">
+              {% csrf_token %}
+              <div class="form-group">
+                <label for="titulo">Título</label>
+                {{ form.titulo|add_attrs:"class=form-control,placeholder=Escribe el título aquí" }}
+              </div>
+              <div class="form-group">
+                <label for="descripcion">Descripción</label>
+                {{ form.descripcion|add_class:"form-control"|add_placeholder:"Descripción breve" }}
+              </div>
+              <div class="form-group">
+                <label for="codigo">Código</label>
+                {{ form.codigo|add_attrs:"class=form-control font-monospace,placeholder=Tu código,data-lang=python" }}
+              </div>
+              <button type="submit" class="btn btn-success btn-block">💾 Guardar</button>
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

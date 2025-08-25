@@ -1,0 +1,41 @@
+{% extends 'myapp/base.html' %}
+{% block title %}Editar Nota{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">📝 Editar Nota</h2>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label for="id_titulo">Título</label>
+      {{ form.titulo }}
+    </div>
+
+    <div class="form-group">
+      <label for="id_descripcion">Descripción</label>
+      {{ form.descripcion }}
+    </div>
+
+    <div class="form-group">
+      <label for="id_codigo">Código</label>
+      {{ form.codigo }}
+    </div>
+
+    <div class="form-group">
+      <label>Imagen actual</label><br>
+      {% if form.instance.imagen %}
+        <img src="{{ form.instance.imagen.url }}" class="img-fluid rounded mb-3" style="max-width: 300px;" alt="Vista previa">
+      {% else %}
+        <p class="text-muted">No hay imagen cargada.</p>
+      {% endif %}
+      <label for="id_imagen">Reemplazar imagen</label>
+      {{ form.imagen }}
+    </div>
+
+    <button type="submit" class="btn btn-primary">💾 Guardar cambios</button>
+    <a href="{% url 'inicio' %}" class="btn btn-secondary">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

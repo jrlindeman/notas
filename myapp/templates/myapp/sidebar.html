@@ -1,0 +1,27 @@
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+  <!-- Sidebar - Brand -->
+  <a class="sidebar-brand d-flex align-items-center justify-content-center" href="#">
+    <div class="sidebar-brand-icon">
+      <i class="fas fa-sticky-note"></i>
+    </div>
+    <div class="sidebar-brand-text mx-3">Mis Notas</div>
+  </a>
+
+  <!-- Divider -->
+  <hr class="sidebar-divider my-0">
+
+  <!-- Nav Item -->
+  <li class="nav-item active">
+    <a class="nav-link" href="#">
+      <i class="fas fa-fw fa-home"></i>
+      <span>Inicio</span>
+    </a>
+    <li class="nav-item">
+  <a class="nav-link" href="{% url 'crear_nota' %}">
+    <i class="fas fa-plus-circle"></i>
+    <span>Crear Nota</span>
+  </a>
+</li>
+
+  </li>
+</ul>

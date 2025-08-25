@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  {% block head_meta %}
+  <meta name="description" content="Gestor de notas ">
+  <meta name="author" content="Jose Lindeman">
+  {% endblock %}
+  <title>{% block title %}Mis Notas{% endblock %}</title>
+
+  <!-- SB Admin 2 CSS -->
+  <link rel="stylesheet" href="{% static 'sbadmin2/vendor/fontawesome-free/css/all.min.css' %}">
+  <link rel="stylesheet" href="{% static 'sbadmin2/css/sb-admin-2.min.css' %}">
+
+  <!-- Prism.js CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.css" />
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body id="page-top">
+  <div id="wrapper">
+    {% include 'myapp/sidebar.html' %}
+
+    <div id="content-wrapper" class="d-flex flex-column">
+      <main id="content" role="main">
+        {% include 'myapp/topbar.html' %}
+        <div class="container-fluid">
+          {% block content %}{% endblock %}
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Core Scripts -->
+  <script src="{% static 'sbadmin2/vendor/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'sbadmin2/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'sbadmin2/js/sb-admin-2.min.js' %}"></script>
+
+  <!-- Prism.js Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

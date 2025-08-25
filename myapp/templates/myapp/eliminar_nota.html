@@ -1,0 +1,25 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-body text-center">
+            <h4 class="card-title text-danger">¿Eliminar Nota?</h4>
+            <p>
+                Estás a punto de eliminar la nota:
+                <strong>{{ nota.titulo }}</strong>
+            </p>
+            <p class="text-muted">Esta acción no se puede deshacer.</p>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+                    <a href="{% url 'inicio' %}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
