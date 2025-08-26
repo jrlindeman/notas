@@ -1,51 +1,47 @@
-# views.py
 import os
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db import transaction
-from .models import Nota, Paso
-from .forms import NotaForm, PasoFormSet
-from .models import Categoria
-from thefuzz import fuzz
-from django.shortcuts import render
-from django.http import HttpResponse
 from django.template.loader import get_template
-from xhtml2pdf import pisa
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from thefuzz import fuzz
+from xhtml2pdf import pisa
 
-def inicio(request):
-    categoria_id = request.GET.get("categoria")
+from .models import Nota, Paso, Categoria
+from .forms import NotaForm, PasoFormSet
+
+
+# Vista protegida: listado de notas
+@login_required
+def index(request):
     notas = Nota.objects.all()
-
-    if categoria_id:
-        notas = notas.filter(categoria_id=categoria_id)
-
-    return render(request, "myapp/inicio.html", {"notas": notas})
+    return render(request, 'myapp/index.html', {'notas': notas})
 
 
+# Vista protegida: perfil del usuario
+@login_required
+def perfil(request):
+    return render(request, 'myapp/perfil.html', {
+        'usuario': request.user
+    })
 
+
+# Vista protegida: detalle de nota
+@login_required
 def detalle_nota(request, nota_id):
-    """
-    Muestra el detalle de una nota con sus pasos.
-    """
     nota = get_object_or_404(Nota, id=nota_id)
     pasos = nota.pasos.all()
     return render(request, "myapp/detalle_nota.html", {"nota": nota, "pasos": pasos})
 
 
+# Vista protegida: crear nota
+@login_required
 def crear_nota(request):
-    """
-    Crea una nueva nota junto con sus pasos.
-    """
     nota = Nota()
     form = NotaForm(request.POST or None, request.FILES or None, instance=nota)
-    formset = PasoFormSet(
-        request.POST or None,
-        request.FILES or None,
-        instance=nota,
-        prefix="form"
-    )
+    formset = PasoFormSet(request.POST or None, request.FILES or None, instance=nota, prefix="form")
 
     if request.method == "POST":
         if form.is_valid() and formset.is_valid():
@@ -58,23 +54,14 @@ def crear_nota(request):
     return render(request, "myapp/crear_nota.html", {"form": form, "formset": formset})
 
 
+# Vista protegida: editar nota
+@login_required
 def editar_nota(request, nota_id):
     nota = get_object_or_404(Nota, id=nota_id)
     form = NotaForm(request.POST or None, request.FILES or None, instance=nota)
-    formset = PasoFormSet(
-        request.POST or None,
-        request.FILES or None,
-        instance=nota,
-        prefix="form"
-    )
+    formset = PasoFormSet(request.POST or None, request.FILES or None, instance=nota, prefix="form")
 
     if request.method == "POST":
-        print("POST:", request.POST)  # 👈 debug
-        print("TOTAL_FORMS:", request.POST.get("form-TOTAL_FORMS"))  # 👈 debug
-        print("Formset valido?:", formset.is_valid())  # 👈 debug
-        print("Errores formset:", formset.errors)  # 👈 debug
-        print("Non-form errors:", formset.non_form_errors())  # 👈 debug
-
         if form.is_valid() and formset.is_valid():
             with transaction.atomic():
                 nota = form.save()
@@ -85,11 +72,9 @@ def editar_nota(request, nota_id):
     return render(request, "myapp/editar_nota.html", {"form": form, "formset": formset})
 
 
-
+# Vista protegida: eliminar nota
+@login_required
 def eliminar_nota(request, nota_id):
-    """
-    Elimina una nota y sus pasos asociados.
-    """
     nota = get_object_or_404(Nota, id=nota_id)
 
     if request.method == "POST":
@@ -99,28 +84,21 @@ def eliminar_nota(request, nota_id):
     return render(request, "myapp/eliminar_nota.html", {"nota": nota})
 
 
+# Vista protegida: eliminar paso
+@login_required
 def eliminar_paso(request, id):
-    """
-    Elimina un paso individual de una nota.
-    Después de eliminar, redirige a la edición de la nota correspondiente.
-    """
     paso = get_object_or_404(Paso, id=id)
-    nota = paso.nota  # guardamos la nota antes de eliminar
+    nota = paso.nota
 
     if request.method == "POST":
         paso.delete()
         return redirect("editar_nota", nota_id=nota.id)
 
-    return render(
-        request,
-        "myapp/eliminar_paso.html",
-        {"paso": paso, "nota": nota}
-    )
+    return render(request, "myapp/eliminar_paso.html", {"paso": paso, "nota": nota})
 
 
-
-# vista categoria
-
+# Vista protegida: notas por categoría
+@login_required
 def notas_por_categoria(request, categoria_id):
     categoria = get_object_or_404(Categoria, id=categoria_id)
     notas = Nota.objects.filter(categoria=categoria)
@@ -130,8 +108,8 @@ def notas_por_categoria(request, categoria_id):
     })
 
 
-#vista de BUSCAR NOTAS
-
+# Vista protegida: buscador inteligente
+@login_required
 def buscar_notas(request):
     query = request.GET.get("q", "").strip().lower()
     notas = Nota.objects.prefetch_related("pasos").all()
@@ -139,23 +117,15 @@ def buscar_notas(request):
     if query:
         resultados = []
         for nota in notas:
-            # Concatenamos todo el texto relevante de la nota y sus pasos
             texto = f"{nota.titulo or ''} {nota.descripcion or ''}"
             for paso in nota.pasos.all():
                 texto += f" {paso.titulo or ''} {paso.descripcion or ''} {paso.codigo or ''}"
-
             texto = texto.lower()
-
-            # Calculamos la similitud con fuzzywuzzy (partial_ratio permite encontrar subcadenas parecidas)
             similitud = fuzz.partial_ratio(query, texto)
-
-            if similitud >= 60:  # 👈 Ajusta el umbral de tolerancia (0–100)
+            if similitud >= 60:
                 resultados.append((nota, similitud))
 
-        # Ordenamos los resultados de mayor a menor similitud
         resultados = sorted(resultados, key=lambda x: x[1], reverse=True)
-
-        # Nos quedamos solo con las notas
         notas = [r[0] for r in resultados]
 
     return render(request, "myapp/inicio.html", {
@@ -164,11 +134,12 @@ def buscar_notas(request):
     })
 
 
+# Vista protegida: exportar PDF
+@login_required
 def exportar_nota_pdf(request, nota_id):
     nota = Nota.objects.get(id=nota_id)
-
-    # Preparar rutas absolutas para imágenes
     pasos = []
+
     for paso in nota.pasos.all():
         imagen_absoluta = None
         if paso.imagen:
@@ -197,6 +168,7 @@ def exportar_nota_pdf(request, nota_id):
         return HttpResponse('Error al generar el PDF', status=500)
     return response
 
-# Vista de prueba
+
+# Vista pública de prueba
 def test(request):
     return render(request, 'myapp/test.html')

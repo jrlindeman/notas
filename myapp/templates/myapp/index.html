@@ -1,178 +1,75 @@
-<!DOCTYPE html>
-<html lang="es">
+{% extends 'myapp/base.html' %}
 {% load static %}
-<head>
-  <meta charset="UTF-8">
-  <title>Notas Técnicas</title>
 
-  <!-- Estilos base -->
-  <link rel="stylesheet" href="{% static 'style.css' %}">
-  <link rel="stylesheet" href="{% static 'css/estilo.css' %}">
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Mis Notas</h2>
 
-  <!-- Prism.js para resaltado de sintaxis -->
-  <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-html.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
-
-  <style>
-    body {
-      background-color: #1e1e1e;
-      color: #f0f0f0;
-      font-family: 'Segoe UI', sans-serif;
-      padding: 20px;
-    }
-
-    h1 {
-      margin-bottom: 20px;
-    }
-
-    .nota {
-      background-color: #2c2c2c;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
-
-    .nota h2 {
-      cursor: pointer;
-      background-color: #3a3a3a;
-      padding: 15px;
-      border-radius: 8px 8px 0 0;
-      margin: 0;
-    }
-
-    .contenido-nota {
-      display: none;
-      padding: 15px;
-    }
-
-    .nota.active .contenido-nota {
-      display: block;
-    }
-
-    #buscador-container {
-      margin-bottom: 20px;
-    }
-
-    #buscador {
-      padding: 10px;
-      width: 300px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    .paso {
-      background-color: #1e1e1e;
-      color: #fff;
-      padding: 20px;
-      margin-bottom: 20px;
-      border-radius: 8px;
-    }
-
-    .bloque-codigo {
-      position: relative;
-      background-color: #111;
-      border-radius: 6px;
-      padding: 10px;
-      margin-top: 10px;
-    }
-
-    .bloque-codigo pre {
-      margin: 0;
-      overflow-x: auto;
-    }
-
-    .copiar-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: #444;
-      color: #fff;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.8em;
-    }
-
-    .copiar-btn:hover {
-      background-color: #666;
-    }
-
-    .preview-img {
-      max-width: 100%;
-      border-radius: 6px;
-      margin-top: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.2);
-    }
-  </style>
-</head>
-<body>
-  <div id="app">
-    <h1>Notas Técnicas</h1>
-
-    <div id="buscador-container">
-      <input type="text" id="buscador" placeholder="Buscar notas...">
+        {% if user.is_authenticated %}
+            <a href="{% url 'crear_nota' %}" class="btn btn-primary">Crear nota</a>
+        {% endif %}
     </div>
 
-    {% for nota in notas %}
-      <div class="nota">
-        <h2 onclick="toggleNota(this)">{{ nota.titulo }}</h2>
-        <div class="contenido-nota">
-          <p>{{ nota.descripcion }}</p>
-          <p><strong>Categoría:</strong> {{ nota.categoria }}</p>
+    {% if notas %}
+        <div class="row">
+            {% for nota in notas %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
 
-          {% for paso in nota.pasos.all %}
-            <div class="paso">
-              <h3>✅ {{ forloop.counter }}. {{ paso.titulo }}</h3>
-              <p>{{ paso.descripcion|linebreaks }}</p>
+                        <!-- ✅ Header con el título -->
+                        <div class="card-header bg-primary text-white">
+                            {{ nota.titulo }}
+                        </div>
 
-              {% if paso.codigo %}
-              <div class="bloque-codigo">
-                <button class="copiar-btn" onclick="copiarCodigo(this)">📋 Copiar</button>
-                <pre><code class="language-{{ paso.lenguaje|default:"html" }}">{{ paso.codigo|escape }}</code></pre>
-              </div>
-              {% endif %}
+                        <div class="card-body d-flex flex-column">
+                            <p class="card-text text-truncate" style="max-height: 4.5em;">
+                                {{ nota.descripcion|default:"(Sin descripción)" }}
+                            </p>
 
-              {% if paso.imagen %}
-                <img src="{{ paso.imagen.url }}" alt="Imagen del paso" class="preview-img">
-              {% endif %}
-            </div>
-          {% endfor %}
+                            <!-- ✅ Mostrar categoría -->
+                            <p class="text-muted small mb-2">
+                                Categoría: <strong>{{ nota.categoria.nombre }}</strong><br>
+                                Actualizada: {{ nota.fecha_actualizacion|date:"d/m/Y H:i" }}
+                            </p>
+
+                            <div class="mt-auto">
+                                <a href="{% url 'detalle_nota' nota.id %}" class="btn btn-sm btn-info">Ver</a>
+
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'editar_nota' nota.id %}" class="btn btn-sm btn-warning">Editar</a>
+                                    <a href="{% url 'eliminar_nota' nota.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
-      </div>
-    {% endfor %}
-  </div>
+    {% else %}
+        <div class="alert alert-info">
+            No tienes notas creadas todavía.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
 
-  <script>
-    function toggleNota(titulo) {
-      const nota = titulo.parentElement;
-      nota.classList.toggle('active');
-    }
+{% block extra_js %}
+<!-- Prism.js para resaltado de código -->
+<link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
 
-    function copiarCodigo(btn) {
-      const code = btn.nextElementSibling.querySelector('code').innerText;
-      navigator.clipboard.writeText(code).then(() => {
-        btn.textContent = '✅ Copiado';
-        setTimeout(() => btn.textContent = '📋 Copiar', 1500);
-      });
-    }
-
-    const buscador = document.getElementById("buscador");
-    buscador.addEventListener("input", () => {
-      const texto = buscador.value.toLowerCase();
-      const notas = document.querySelectorAll(".nota");
-
-      notas.forEach(nota => {
-        const titulo = nota.querySelector("h2").textContent.toLowerCase();
-        const descripcion = nota.querySelector(".contenido-nota p")?.textContent.toLowerCase() || "";
-        const categoria = nota.querySelector(".contenido-nota strong")?.nextSibling?.textContent.toLowerCase() || "";
-
-        const coincide = titulo.includes(texto) || descripcion.includes(texto) || categoria.includes(texto);
-        nota.style.display = coincide ? "block" : "none";
-      });
+<!-- Función para copiar código -->
+<script>
+  function copiarCodigo(boton) {
+    const codigo = boton.closest('.position-relative').querySelector('code');
+    navigator.clipboard.writeText(codigo.textContent).then(() => {
+      boton.innerText = "✅";
+      setTimeout(() => boton.innerText = "Copiar📋", 1500);
     });
-  </script>
-</body>
-</html>
+  }
+</script>
+{% endblock %}

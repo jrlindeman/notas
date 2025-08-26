@@ -13,8 +13,8 @@
         class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
     <div class="input-group">
       <input type="text" name="q" class="form-control bg-light border-0 small" 
-             placeholder="Buscar notas..." aria-label="Search" aria-describedby="basic-addon2"
-             value="{{ request.GET.q|default:'' }}">
+             placeholder="Buscar notas..." aria-label="Buscar" aria-describedby="basic-addon2"
+             value="{{ request.GET.q|default_if_none:'' }}">
       <div class="input-group-append">
         <button class="btn btn-primary" type="submit">
           <i class="fas fa-search fa-sm"></i>
@@ -34,17 +34,21 @@
       <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <span class="mr-2 d-none d-lg-inline text-gray-600 small">
-          {{ request.user.username|default:"Invitado" }}
+          {% if request.user.is_authenticated %}
+            {{ request.user.username }}
+          {% else %}
+            Invitado
+          {% endif %}
         </span>
         <img class="img-profile rounded-circle"
-             src="{% static 'sbadmin2/img/undraw_profile.svg' %}">
+             src="{% static 'sbadmin2/img/undraw_profile.svg' %}" alt="Perfil">
       </a>
 
       <!-- Dropdown -->
       <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
            aria-labelledby="userDropdown">
         {% if request.user.is_authenticated %}
-          <a class="dropdown-item" href="#">
+          <a class="dropdown-item" href="{% url 'perfil' %}">
             <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
             Perfil
           </a>
@@ -53,10 +57,14 @@
             Configuración
           </a>
           <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="{% url 'logout' %}">
-            <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-            Cerrar sesión
-          </a>
+          <!-- ✅ Logout por POST, sin interferencias -->
+          <form method="post" action="{% url 'logout' %}" style="margin: 0;">
+            {% csrf_token %}
+            <button type="submit" class="dropdown-item w-100 text-left" style="border: none; background: none;">
+              <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+              Cerrar sesión
+            </button>
+          </form>
         {% else %}
           <a class="dropdown-item" href="{% url 'login' %}">
             <i class="fas fa-sign-in-alt fa-sm fa-fw mr-2 text-gray-400"></i>
