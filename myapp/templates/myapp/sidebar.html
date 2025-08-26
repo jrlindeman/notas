@@ -1,6 +1,6 @@
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
   <!-- Sidebar - Brand -->
-  <a class="sidebar-brand d-flex align-items-center justify-content-center" href="#">
+  <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'inicio' %}">
     <div class="sidebar-brand-icon">
       <i class="fas fa-sticky-note"></i>
     </div>
@@ -10,18 +10,45 @@
   <!-- Divider -->
   <hr class="sidebar-divider my-0">
 
-  <!-- Nav Item -->
+  <!-- Nav Item - Inicio -->
   <li class="nav-item active">
-    <a class="nav-link" href="#">
+    <a class="nav-link" href="{% url 'inicio' %}">
       <i class="fas fa-fw fa-home"></i>
       <span>Inicio</span>
     </a>
-    <li class="nav-item">
-  <a class="nav-link" href="{% url 'crear_nota' %}">
-    <i class="fas fa-plus-circle"></i>
-    <span>Crear Nota</span>
-  </a>
-</li>
-
   </li>
+
+  <!-- Nav Item - Crear Nota -->
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'crear_nota' %}">
+      <i class="fas fa-plus-circle"></i>
+      <span>Crear Nota</span>
+    </a>
+  </li>
+
+  <!-- Divider -->
+  <hr class="sidebar-divider">
+
+
+  <!-- Encabezado Categorías -->
+  <div class="sidebar-heading">
+    Categorías
+  </div>
+
+  {% if categorias_menu %}
+      {% for cat in categorias_menu %}
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'inicio' %}?categoria={{ cat.id }}">
+          <i class="fas fa-tag"></i>
+          <span>{{ cat.nombre }}</span>
+        </a>
+      </li>
+      {% endfor %}
+  {% else %}
+      <li class="nav-item">
+        <span class="nav-link text-muted small">Sin categorías</span>
+      </li>
+  {% endif %}
+
+
 </ul>

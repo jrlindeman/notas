@@ -8,20 +8,27 @@ class NotaForm(forms.ModelForm):
     Formulario para crear/editar Notas.
     Incluye un selector de categoría.
     """
+    categoria = forms.ModelChoiceField(
+        queryset=Categoria.objects.all().order_by("nombre"),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label="Categoría"
+    )
+
     class Meta:
         model = Nota
         fields = ['titulo', 'descripcion', 'categoria']
         widgets = {
             'titulo': forms.TextInput(attrs={'class': 'form-control'}),
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'categoria': forms.Select(attrs={'class': 'form-control'}),
         }
 
 
 class PasoForm(forms.ModelForm):
     """
     Formulario para crear/editar pasos de una Nota.
-    Un paso es válido si al menos uno de sus campos está lleno.
+    Un paso es válido si al menos uno de sus campos está lleno,
+    excepto si el paso está marcado para eliminarse.
     """
     class Meta:
         model = Paso
@@ -40,7 +47,11 @@ class PasoForm(forms.ModelForm):
         codigo = cleaned_data.get("codigo")
         imagen = cleaned_data.get("imagen")
 
-        # Si todos los campos están vacíos, marcamos error
+        # 👇 Si el formulario está marcado para eliminar, no validamos
+        if self.cleaned_data.get("DELETE", False):
+            return cleaned_data
+
+        # Si todos los campos están vacíos, error
         if not any([titulo, descripcion, codigo, imagen]):
             raise forms.ValidationError(
                 "Debe completar al menos un campo en el paso."

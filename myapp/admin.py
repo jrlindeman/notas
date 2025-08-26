@@ -1,11 +1,19 @@
 from django.contrib import admin
-from .models import Nota, Paso
+from .models import Categoria, Nota, Paso
 
-class PasoInline(admin.TabularInline):
-    model = Paso
-    extra = 1
+@admin.register(Categoria)
+class CategoriaAdmin(admin.ModelAdmin):
+    list_display = ("id", "nombre")
+    search_fields = ("nombre",)
 
 @admin.register(Nota)
 class NotaAdmin(admin.ModelAdmin):
-    inlines = [PasoInline]
-    list_display = ('titulo', 'categoria')
+    list_display = ("id", "titulo", "categoria", "fecha_actualizacion")
+    list_filter = ("categoria", "fecha_actualizacion")
+    search_fields = ("titulo", "descripcion")
+
+@admin.register(Paso)
+class PasoAdmin(admin.ModelAdmin):
+    list_display = ("id", "nota", "titulo", "orden")
+    list_filter = ("nota",)
+

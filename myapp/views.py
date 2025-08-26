@@ -4,13 +4,17 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.db import transaction
 from .models import Nota, Paso
 from .forms import NotaForm, PasoFormSet
-
+from .models import Categoria
+from thefuzz import fuzz
+from django.shortcuts import render
 
 def inicio(request):
-    """
-    Lista todas las notas.
-    """
-    notas = Nota.objects.all().order_by("-fecha_actualizacion")
+    categoria_id = request.GET.get("categoria")
+    notas = Nota.objects.all()
+
+    if categoria_id:
+        notas = notas.filter(categoria_id=categoria_id)
+
     return render(request, "myapp/inicio.html", {"notas": notas})
 
 
@@ -106,6 +110,52 @@ def eliminar_paso(request, id):
         "myapp/eliminar_paso.html",
         {"paso": paso, "nota": nota}
     )
+
+
+
+# vista categoria
+
+def notas_por_categoria(request, categoria_id):
+    categoria = get_object_or_404(Categoria, id=categoria_id)
+    notas = Nota.objects.filter(categoria=categoria)
+    return render(request, "myapp/inicio.html", {
+        "notas": notas,
+        "categoria": categoria
+    })
+
+
+#vista de BUSCAR NOTAS
+
+def buscar_notas(request):
+    query = request.GET.get("q", "").strip().lower()
+    notas = Nota.objects.prefetch_related("pasos").all()
+
+    if query:
+        resultados = []
+        for nota in notas:
+            # Concatenamos todo el texto relevante de la nota y sus pasos
+            texto = f"{nota.titulo or ''} {nota.descripcion or ''}"
+            for paso in nota.pasos.all():
+                texto += f" {paso.titulo or ''} {paso.descripcion or ''} {paso.codigo or ''}"
+
+            texto = texto.lower()
+
+            # Calculamos la similitud con fuzzywuzzy (partial_ratio permite encontrar subcadenas parecidas)
+            similitud = fuzz.partial_ratio(query, texto)
+
+            if similitud >= 60:  # 👈 Ajusta el umbral de tolerancia (0–100)
+                resultados.append((nota, similitud))
+
+        # Ordenamos los resultados de mayor a menor similitud
+        resultados = sorted(resultados, key=lambda x: x[1], reverse=True)
+
+        # Nos quedamos solo con las notas
+        notas = [r[0] for r in resultados]
+
+    return render(request, "myapp/inicio.html", {
+        "notas": notas,
+        "query": query
+    })
 
 
 # Vista de prueba

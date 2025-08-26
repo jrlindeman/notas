@@ -3,15 +3,14 @@ from django.db import models
 
 class Categoria(models.Model):
     """
-    Categoría a la que pertenece una nota.
-    Ej: Trabajo, Estudio, Personal...
+    Categoría de las notas (ejemplo: Trabajo, Estudio, Personal...).
     """
     nombre = models.CharField(max_length=100, unique=True)
 
     class Meta:
+        ordering = ["nombre"]
         verbose_name = "Categoría"
         verbose_name_plural = "Categorías"
-        ordering = ["nombre"]
 
     def __str__(self):
         return self.nombre
@@ -19,25 +18,28 @@ class Categoria(models.Model):
 
 class Nota(models.Model):
     """
-    Una nota principal que puede tener varios pasos.
+    Nota principal que puede contener varios pasos.
+    Cada nota pertenece opcionalmente a una categoría.
     """
     titulo = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True, null=True)
     categoria = models.ForeignKey(
         Categoria,
-        on_delete=models.SET_NULL,   # Si se borra la categoría, la nota queda con categoria=None
-        related_name="notas",
+        on_delete=models.SET_NULL,   # si se elimina la categoría, la nota queda sin categoría
+        null=True,
         blank=True,
-        null=True
+        related_name="notas"
     )
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-fecha_actualizacion", "-fecha_creacion"]
+        verbose_name = "Nota"
+        verbose_name_plural = "Notas"
 
     def __str__(self):
-        return self.titulo
+        return f"{self.titulo} ({self.categoria.nombre if self.categoria else 'Sin categoría'})"
 
 
 class Paso(models.Model):
@@ -58,6 +60,8 @@ class Paso(models.Model):
 
     class Meta:
         ordering = ["orden", "id"]
+        verbose_name = "Paso"
+        verbose_name_plural = "Pasos"
 
     def __str__(self):
         if self.titulo:
