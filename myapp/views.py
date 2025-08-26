@@ -1,5 +1,7 @@
 # views.py
-
+import os
+from django.conf import settings
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db import transaction
 from .models import Nota, Paso
@@ -7,6 +9,10 @@ from .forms import NotaForm, PasoFormSet
 from .models import Categoria
 from thefuzz import fuzz
 from django.shortcuts import render
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from .utils import render_to_pdf 
 
 def inicio(request):
     categoria_id = request.GET.get("categoria")
@@ -157,6 +163,38 @@ def buscar_notas(request):
         "query": query
     })
 
+
+def exportar_nota_pdf(request, nota_id):
+    nota = Nota.objects.get(id=nota_id)
+
+    # Preparar rutas absolutas para imágenes
+    pasos = []
+    for paso in nota.pasos.all():
+        imagen_absoluta = None
+        if paso.imagen:
+            imagen_absoluta = os.path.join(settings.MEDIA_ROOT, paso.imagen.name)
+        pasos.append({
+            'titulo': paso.titulo,
+            'descripcion': paso.descripcion,
+            'codigo': paso.codigo,
+            'imagen_absoluta': imagen_absoluta
+        })
+
+    context = {
+        'nota': nota,
+        'pasos': pasos
+    }
+
+    template = get_template('myapp/pdf_template.html')
+    html = template.render(context)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="nota_{nota.id}.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('Error al generar el PDF', status=500)
+    return response
 
 # Vista de prueba
 def test(request):

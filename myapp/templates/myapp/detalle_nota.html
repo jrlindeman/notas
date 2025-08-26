@@ -3,19 +3,23 @@
 
 {% block content %}
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center">
+
+    <!-- Encabezado de la nota -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>{{ nota.titulo }}</h2>
-        <div>
+        <div class="btn-group">
             <a href="{% url 'editar_nota' nota.id %}" class="btn btn-warning btn-sm">Editar</a>
             <a href="{% url 'eliminar_nota' nota.id %}" class="btn btn-danger btn-sm">Eliminar</a>
         </div>
     </div>
 
-    <p class="text-muted">
-        Creada: {{ nota.fecha_creacion|date:"d/m/Y H:i" }} <br>
+    <!-- Fechas -->
+    <p class="text-muted mb-4">
+        Creada: {{ nota.fecha_creacion|date:"d/m/Y H:i" }}<br>
         Última actualización: {{ nota.fecha_actualizacion|date:"d/m/Y H:i" }}
     </p>
 
+    <!-- Descripción -->
     {% if nota.descripcion %}
         <div class="mb-4">
             <h5>Descripción</h5>
@@ -23,16 +27,19 @@
         </div>
     {% endif %}
 
+    <!-- Pasos -->
     <h4>Pasos</h4>
     {% if pasos %}
-        <div class="list-group">
+        <div class="list-group mb-4">
             {% for paso in pasos %}
                 <div class="list-group-item mb-3">
-                    {% if paso.titulo %}
-                        <h5>{{ paso.titulo }}</h5>
-                    {% else %}
-                        <h5 class="text-muted">Paso {{ forloop.counter }}</h5>
-                    {% endif %}
+                    <h5>
+                        {% if paso.titulo %}
+                            {{ paso.titulo }}
+                        {% else %}
+                            <span class="text-muted">Paso {{ forloop.counter }}</span>
+                        {% endif %}
+                    </h5>
 
                     {% if paso.descripcion %}
                         <p>{{ paso.descripcion }}</p>
@@ -54,8 +61,13 @@
         <p class="text-muted">No hay pasos para esta nota.</p>
     {% endif %}
 
-    <div class="mt-4">
+    <!-- Acciones -->
+    <div class="d-flex justify-content-between">
         <a href="{% url 'inicio' %}" class="btn btn-outline-secondary">Volver</a>
+
+        <a href="{% url 'exportar_nota_pdf' nota.id %}" class="btn btn-outline-primary">Exportar a PDF</a>
+
     </div>
+
 </div>
 {% endblock %}

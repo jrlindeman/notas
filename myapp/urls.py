@@ -1,4 +1,5 @@
 from django.urls import path, include
+from .views import exportar_nota_pdf
 from . import views
 
 urlpatterns = [
@@ -11,4 +12,6 @@ urlpatterns = [
     path('categoria/<int:categoria_id>/', views.notas_por_categoria, name='notas_por_categoria'),
     path("buscar/", views.buscar_notas, name="buscar_notas"),
     path('accounts/', include('django.contrib.auth.urls')),  # Añade esta línea
+    path('nota/<int:nota_id>/exportar_pdf/', exportar_nota_pdf, name='exportar_nota_pdf')
+
 ]

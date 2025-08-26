@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12pt; }
+        h1 { color: #333; }
+        .paso { margin-bottom: 20px; }
+        .codigo { background: #f4f4f4; padding: 10px; font-family: monospace; }
+        img { max-width: 100%; height: auto; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>{{ nota.titulo }}</h1>
+
+    {% if nota.categoria %}
+        <p><strong>Categoría:</strong> {{ nota.categoria.nombre }}</p>
+    {% endif %}
+
+    <p><strong>Fecha:</strong> {{ nota.fecha_creacion|date:"d/m/Y H:i" }}</p>
+
+    {% if nota.descripcion %}
+        <p>{{ nota.descripcion }}</p>
+    {% endif %}
+
+    <hr>
+    <h2>Pasos</h2>
+    {% for paso in pasos %}
+        <div class="paso">
+            {% if paso.titulo %}<h3>{{ paso.titulo }}</h3>{% endif %}
+            {% if paso.descripcion %}<p>{{ paso.descripcion }}</p>{% endif %}
+            {% if paso.codigo %}
+                <div class="codigo">{{ paso.codigo|linebreaksbr }}</div>
+            {% endif %}
+            {% if paso.imagen_absoluta %}
+                <img src="{{ paso.imagen_absoluta }}" />
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>No hay pasos registrados.</p>
+    {% endfor %}
+</body>
+</html>
