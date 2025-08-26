@@ -12,7 +12,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
-from .utils import render_to_pdf 
+from django.utils import timezone
 
 def inicio(request):
     categoria_id = request.GET.get("categoria")
@@ -182,7 +182,8 @@ def exportar_nota_pdf(request, nota_id):
 
     context = {
         'nota': nota,
-        'pasos': pasos
+        'pasos': pasos,
+        'now': timezone.now()
     }
 
     template = get_template('myapp/pdf_template.html')

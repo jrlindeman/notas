@@ -8,23 +8,24 @@
         .paso { margin-bottom: 20px; }
         .codigo { background: #f4f4f4; padding: 10px; font-family: monospace; }
         img { max-width: 100%; height: auto; margin-top: 10px; }
+        .metadatos {
+            margin-top: 40px;
+            padding: 15px;
+            border-top: 1px solid #ccc;
+            font-size: 10pt;
+            color: #555;
+        }
     </style>
 </head>
 <body>
     <h1>{{ nota.titulo }}</h1>
-
-    {% if nota.categoria %}
-        <p><strong>Categoría:</strong> {{ nota.categoria.nombre }}</p>
-    {% endif %}
-
-    <p><strong>Fecha:</strong> {{ nota.fecha_creacion|date:"d/m/Y H:i" }}</p>
 
     {% if nota.descripcion %}
         <p>{{ nota.descripcion }}</p>
     {% endif %}
 
     <hr>
-    <h2>Pasos</h2>
+   {% comment %} <h2>Pasos</h2>{% endcomment %}
     {% for paso in pasos %}
         <div class="paso">
             {% if paso.titulo %}<h3>{{ paso.titulo }}</h3>{% endif %}
@@ -39,5 +40,10 @@
     {% empty %}
         <p>No hay pasos registrados.</p>
     {% endfor %}
+
+    <div class="metadatos">
+        <p><strong>Creada:</strong> {{ nota.fecha_creacion|date:"d/m/Y H:i" }}</p>
+        <p><strong>Exportada por:</strong> José Lindeman</p>
+    </div>
 </body>
 </html>
