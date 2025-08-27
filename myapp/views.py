@@ -99,10 +99,10 @@ def eliminar_paso(request, id):
 
 # Vista protegida: notas por categoría
 @login_required
-def notas_por_categoria(request, categoria_id):
-    categoria = get_object_or_404(Categoria, id=categoria_id)
-    notas = Nota.objects.filter(categoria=categoria)
-    return render(request, "myapp/inicio.html", {
+def notas_por_categoria(request, slug):
+    categoria = get_object_or_404(Categoria, slug=slug)
+    notas = Nota.objects.filter(categoria=categoria).order_by("-fecha_actualizacion").prefetch_related("pasos")
+    return render(request, "myapp/index.html", {
         "notas": notas,
         "categoria": categoria
     })
@@ -128,7 +128,7 @@ def buscar_notas(request):
         resultados = sorted(resultados, key=lambda x: x[1], reverse=True)
         notas = [r[0] for r in resultados]
 
-    return render(request, "myapp/inicio.html", {
+    return render(request, "myapp/index.html", {
         "notas": notas,
         "query": query
     })

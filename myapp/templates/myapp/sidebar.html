@@ -38,7 +38,7 @@
   {% if categorias_menu %}
       {% for cat in categorias_menu %}
       <li class="nav-item">
-        <a class="nav-link" href="{% url 'inicio' %}?categoria={{ cat.id }}">
+        <a class="nav-link" href="{% url 'notas_por_categoria' cat.slug %}">
           <i class="fas fa-tag"></i>
           <span>{{ cat.nombre }}</span>
         </a>

@@ -1,19 +1,25 @@
 from django.db import models
+from django.utils.text import slugify
 
 
 class Categoria(models.Model):
-    """
-    Categoría de las notas (ejemplo: Trabajo, Estudio, Personal...).
-    """
-    nombre = models.CharField(max_length=100, unique=True)
+    nombre = models.CharField(max_length=200, unique=True)
+    slug = models.SlugField(unique=True, blank=True)
 
-    class Meta:
-        ordering = ["nombre"]
-        verbose_name = "Categoría"
-        verbose_name_plural = "Categorías"
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.nombre)
+            slug = base_slug
+            contador = 1
+            while Categoria.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{contador}"
+                contador += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.nombre
+
 
 
 class Nota(models.Model):
@@ -67,3 +73,4 @@ class Paso(models.Model):
         if self.titulo:
             return f"{self.titulo} (Paso de {self.nota.titulo})"
         return f"Paso {self.id} de {self.nota.titulo}"
+    

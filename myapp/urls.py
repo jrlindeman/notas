@@ -5,6 +5,7 @@ from .views import (
     index, crear_nota, detalle_nota, editar_nota, eliminar_nota,
     exportar_nota_pdf, eliminar_paso, notas_por_categoria, buscar_notas, perfil
 )
+from myapp import views
 
 urlpatterns = [
     # Página principal (requiere login)
@@ -27,7 +28,7 @@ urlpatterns = [
     path('paso/<int:id>/eliminar/', eliminar_paso, name='eliminar_paso'),
 
     # Filtro por categoría
-    path('categoria/<int:categoria_id>/', notas_por_categoria, name='notas_por_categoria'),
+    path('categoria/<slug:slug>/', views.notas_por_categoria, name='notas_por_categoria'),
 
     # Buscador inteligente
     path('buscar/', buscar_notas, name='buscar_notas'),
