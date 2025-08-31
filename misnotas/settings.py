@@ -14,6 +14,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'myapp',
+    'ckeditor',
+    'ckeditor_uploader', 
 ]
 
 MIDDLEWARE = [
@@ -79,3 +81,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+CKEDITOR_UPLOAD_PATH = "uploads/"   # carpeta dentro de MEDIA_ROOT
+
+# Opcional: configuración extra de CKEditor
+CKEDITOR_CONFIGS = {
+    "default": {
+        "toolbar": "full",
+        "height": 350,
+        "width": "100%",
+    },
+}

@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
-
+from ckeditor.fields import RichTextField
 
 class Categoria(models.Model):
     nombre = models.CharField(max_length=200, unique=True)
@@ -28,7 +28,7 @@ class Nota(models.Model):
     Cada nota pertenece opcionalmente a una categoría.
     """
     titulo = models.CharField(max_length=200)
-    descripcion = models.TextField(blank=True, null=True)
+    descripcion = RichTextField(blank=True, null=True)  # 🔥 CKEditor aquí
     categoria = models.ForeignKey(
         Categoria,
         on_delete=models.SET_NULL,   # si se elimina la categoría, la nota queda sin categoría
@@ -74,3 +74,17 @@ class Paso(models.Model):
             return f"{self.titulo} (Paso de {self.nota.titulo})"
         return f"Paso {self.id} de {self.nota.titulo}"
     
+
+    ############ MODIFICACION 27/08/2025 11:00PM
+
+
+
+class NotaLibre(models.Model):
+    titulo = models.CharField(max_length=200)
+    contenido = RichTextField()
+    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, blank=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.titulo

@@ -9,23 +9,52 @@ from django.contrib.auth.decorators import login_required
 from thefuzz import fuzz
 from xhtml2pdf import pisa
 
-from .models import Nota, Paso, Categoria
-from .forms import NotaForm, PasoFormSet
+from .models import Nota, Paso, Categoria, NotaLibre
+from .forms import NotaForm, PasoFormSet, NotaLibreForm
 
 
-# Vista protegida: listado de notas
+# Vista protegida: listado unificado (Notas + Notas Libres)
 @login_required
 def index(request):
-    notas = Nota.objects.all()
-    return render(request, 'myapp/index.html', {'notas': notas})
+    categoria_id = request.GET.get("categoria")
+
+    notas = Nota.objects.all().order_by("-fecha_actualizacion").prefetch_related("pasos")
+    notas_libres = NotaLibre.objects.all().order_by("-fecha_actualizacion")
+
+    if categoria_id:
+        notas = notas.filter(categoria_id=categoria_id)
+        notas_libres = notas_libres.filter(categoria_id=categoria_id)
+
+    notas_normalizadas = []
+    for n in notas:
+        notas_normalizadas.append({
+            "id": n.id,
+            "titulo": n.titulo,
+            "descripcion": n.descripcion,
+            "categoria": n.categoria,
+            "fecha_actualizacion": n.fecha_actualizacion,
+            "tipo": "nota",
+        })
+
+    for nl in notas_libres:
+        notas_normalizadas.append({
+            "id": nl.id,
+            "titulo": nl.titulo,
+            "descripcion": nl.contenido[:200],
+            "categoria": nl.categoria,
+            "fecha_actualizacion": nl.fecha_actualizacion,
+            "tipo": "nota_libre",
+        })
+
+    notas_normalizadas.sort(key=lambda x: x["fecha_actualizacion"], reverse=True)
+
+    return render(request, 'myapp/index.html', {"notas": notas_normalizadas})
 
 
 # Vista protegida: perfil del usuario
 @login_required
 def perfil(request):
-    return render(request, 'myapp/perfil.html', {
-        'usuario': request.user
-    })
+    return render(request, 'myapp/perfil.html', {"usuario": request.user})
 
 
 # Vista protegida: detalle de nota
@@ -76,11 +105,9 @@ def editar_nota(request, nota_id):
 @login_required
 def eliminar_nota(request, nota_id):
     nota = get_object_or_404(Nota, id=nota_id)
-
     if request.method == "POST":
         nota.delete()
         return redirect("inicio")
-
     return render(request, "myapp/eliminar_nota.html", {"nota": nota})
 
 
@@ -89,47 +116,111 @@ def eliminar_nota(request, nota_id):
 def eliminar_paso(request, id):
     paso = get_object_or_404(Paso, id=id)
     nota = paso.nota
-
     if request.method == "POST":
         paso.delete()
         return redirect("editar_nota", nota_id=nota.id)
-
     return render(request, "myapp/eliminar_paso.html", {"paso": paso, "nota": nota})
 
 
-# Vista protegida: notas por categoría
+# ✅ Vista protegida: notas por categoría (unificada)
 @login_required
 def notas_por_categoria(request, slug):
     categoria = get_object_or_404(Categoria, slug=slug)
-    notas = Nota.objects.filter(categoria=categoria).order_by("-fecha_actualizacion").prefetch_related("pasos")
+
+    notas = Nota.objects.filter(categoria=categoria).order_by("-fecha_actualizacion")
+    notas_libres = NotaLibre.objects.filter(categoria=categoria).order_by("-fecha_actualizacion")
+
+    notas_normalizadas = []
+    for n in notas:
+        notas_normalizadas.append({
+            "id": n.id,
+            "titulo": n.titulo,
+            "descripcion": n.descripcion,
+            "categoria": n.categoria,
+            "fecha_actualizacion": n.fecha_actualizacion,
+            "tipo": "nota",
+        })
+    for nl in notas_libres:
+        notas_normalizadas.append({
+            "id": nl.id,
+            "titulo": nl.titulo,
+            "descripcion": nl.contenido[:200],
+            "categoria": nl.categoria,
+            "fecha_actualizacion": nl.fecha_actualizacion,
+            "tipo": "nota_libre",
+        })
+
+    notas_normalizadas.sort(key=lambda x: x["fecha_actualizacion"], reverse=True)
+
     return render(request, "myapp/index.html", {
-        "notas": notas,
+        "notas": notas_normalizadas,
         "categoria": categoria
     })
 
 
-# Vista protegida: buscador inteligente
+# Vista protegida: buscador unificado
 @login_required
 def buscar_notas(request):
     query = request.GET.get("q", "").strip().lower()
+
     notas = Nota.objects.prefetch_related("pasos").all()
+    notas_libres = NotaLibre.objects.all()
+
+    resultados_normalizados = []
 
     if query:
-        resultados = []
         for nota in notas:
             texto = f"{nota.titulo or ''} {nota.descripcion or ''}"
             for paso in nota.pasos.all():
                 texto += f" {paso.titulo or ''} {paso.descripcion or ''} {paso.codigo or ''}"
-            texto = texto.lower()
-            similitud = fuzz.partial_ratio(query, texto)
-            if similitud >= 60:
-                resultados.append((nota, similitud))
-
-        resultados = sorted(resultados, key=lambda x: x[1], reverse=True)
-        notas = [r[0] for r in resultados]
+            similitud = fuzz.partial_ratio(query, texto.lower())
+            if similitud >= 80:
+                resultados_normalizados.append({
+                    "id": nota.id,
+                    "titulo": nota.titulo,
+                    "descripcion": nota.descripcion,
+                    "categoria": nota.categoria,
+                    "fecha_actualizacion": nota.fecha_actualizacion,
+                    "tipo": "nota",
+                    "score": similitud
+                })
+        for nl in notas_libres:
+            texto = f"{nl.titulo or ''} {nl.contenido or ''}"
+            similitud = fuzz.partial_ratio(query, texto.lower())
+            if similitud >= 80:
+                resultados_normalizados.append({
+                    "id": nl.id,
+                    "titulo": nl.titulo,
+                    "descripcion": nl.contenido[:200],
+                    "categoria": nl.categoria,
+                    "fecha_actualizacion": nl.fecha_actualizacion,
+                    "tipo": "nota_libre",
+                    "score": similitud
+                })
+        resultados_normalizados.sort(key=lambda x: (x["score"], x["fecha_actualizacion"]), reverse=True)
+    else:
+        for n in notas:
+            resultados_normalizados.append({
+                "id": n.id,
+                "titulo": n.titulo,
+                "descripcion": n.descripcion,
+                "categoria": n.categoria,
+                "fecha_actualizacion": n.fecha_actualizacion,
+                "tipo": "nota",
+            })
+        for nl in notas_libres:
+            resultados_normalizados.append({
+                "id": nl.id,
+                "titulo": nl.titulo,
+                "descripcion": nl.contenido[:200],
+                "categoria": nl.categoria,
+                "fecha_actualizacion": nl.fecha_actualizacion,
+                "tipo": "nota_libre",
+            })
+        resultados_normalizados.sort(key=lambda x: x["fecha_actualizacion"], reverse=True)
 
     return render(request, "myapp/index.html", {
-        "notas": notas,
+        "notas": resultados_normalizados,
         "query": query
     })
 
@@ -139,7 +230,6 @@ def buscar_notas(request):
 def exportar_nota_pdf(request, nota_id):
     nota = Nota.objects.get(id=nota_id)
     pasos = []
-
     for paso in nota.pasos.all():
         imagen_absoluta = None
         if paso.imagen:
@@ -151,12 +241,7 @@ def exportar_nota_pdf(request, nota_id):
             'imagen_absoluta': imagen_absoluta
         })
 
-    context = {
-        'nota': nota,
-        'pasos': pasos,
-        'now': timezone.now()
-    }
-
+    context = {'nota': nota, 'pasos': pasos, 'now': timezone.now()}
     template = get_template('myapp/pdf_template.html')
     html = template.render(context)
 
@@ -172,3 +257,46 @@ def exportar_nota_pdf(request, nota_id):
 # Vista pública de prueba
 def test(request):
     return render(request, 'myapp/test.html')
+
+
+# CRUD para Notas Libres
+@login_required
+def lista_notas_libres(request):
+    notas = NotaLibre.objects.all().order_by("-fecha_actualizacion")
+    return render(request, "myapp/notas_libres.html", {"notas": notas})
+
+@login_required
+def crear_nota_libre(request):
+    if request.method == "POST":
+        form = NotaLibreForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("notas_libres")
+    else:
+        form = NotaLibreForm()
+    return render(request, "myapp/crear_nota_libre.html", {"form": form})
+
+@login_required
+def editar_nota_libre(request, pk):
+    nota = get_object_or_404(NotaLibre, pk=pk)
+    if request.method == "POST":
+        form = NotaLibreForm(request.POST, instance=nota)
+        if form.is_valid():
+            form.save()
+            return redirect("notas_libres")
+    else:
+        form = NotaLibreForm(instance=nota)
+    return render(request, "myapp/editar_nota_libre.html", {"form": form})
+
+@login_required
+def detalle_nota_libre(request, pk):
+    nota = get_object_or_404(NotaLibre, pk=pk)
+    return render(request, "myapp/detalle_nota_libre.html", {"nota": nota})
+
+@login_required
+def eliminar_nota_libre(request, pk):
+    nota = get_object_or_404(NotaLibre, pk=pk)
+    if request.method == "POST":
+        nota.delete()
+        return redirect("notas_libres")
+    return render(request, "myapp/eliminar_nota_libre.html", {"nota": nota})

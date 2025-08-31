@@ -1,11 +1,27 @@
-{% extends 'base.html' %}
+{% extends "myapp/base.html" %}
 {% block content %}
-<div class="nota-libre-detalle">
-    <h2>{{ nota.titulo }}</h2>
-    <div class="contenido-html">
-        {{ nota.contenido_html|safe }}
+<div class="container-fluid mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-info text-white">
+            <h4 class="m-0">{{ nota.titulo }}</h4>
+        </div>
+        <div class="card-body">
+            {% if nota.categoria %}
+                <p class="text-muted small">Categoría: {{ nota.categoria.nombre }}</p>
+            {% endif %}
+            <div class="nota-contenido">
+                {{ nota.contenido|safe }}
+            </div>
+            <hr>
+            <p class="text-muted small">Última actualización: {{ nota.fecha_actualizacion|date:"d/m/Y H:i" }}</p>
+        </div>
+        <div class="card-footer">
+            <a href="{% url 'notas_libres' %}" class="btn btn-secondary">Volver</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'editar_nota_libre' nota.id %}" class="btn btn-warning">Editar</a>
+                <a href="{% url 'eliminar_nota_libre' nota.id %}" class="btn btn-danger">Eliminar</a>
+            {% endif %}
+        </div>
     </div>
-    <p><strong>Categoría:</strong> {{ nota.categoria.nombre }}</p>
-    <p><strong>Creada por:</strong> {{ nota.autor.username }}</p>
 </div>
 {% endblock %}

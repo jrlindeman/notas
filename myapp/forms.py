@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
 from .models import Nota, Paso, Categoria
-
+from .models import NotaLibre
 
 class NotaForm(forms.ModelForm):
     """
@@ -67,3 +67,14 @@ PasoFormSet = inlineformset_factory(
     extra=1,          # al menos un paso vacío por defecto
     can_delete=True,  # permitir eliminar pasos en la edición
 )
+
+
+
+############ MODIFICACION 27/08/2025 11:00PM
+
+
+
+class NotaLibreForm(forms.ModelForm):
+    class Meta:
+        model = NotaLibre
+        fields = ["titulo", "contenido", "categoria"]

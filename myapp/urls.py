@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.urls import path, include
+from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 from .views import (
@@ -41,4 +43,14 @@ urlpatterns = [
 
     # Redirección para compatibilidad con /accounts/login/
     path('accounts/login/', RedirectView.as_view(url='/login/', permanent=True)),
-]
+
+
+    #vistas de una nota libre sin pasos 
+    path("notas-libres/", views.lista_notas_libres, name="notas_libres"),
+    path("notas-libres/crear/", views.crear_nota_libre, name="crear_nota_libre"),
+    path("notas-libres/<int:pk>/", views.detalle_nota_libre, name="detalle_nota_libre"),
+    path("notas-libres/<int:pk>/editar/", views.editar_nota_libre, name="editar_nota_libre"),
+    path("notas-libres/<int:pk>/eliminar/", views.eliminar_nota_libre, name="eliminar_nota_libre"),
+
+    path("ckeditor/", include("ckeditor_uploader.urls")),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

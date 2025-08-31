@@ -11283,3 +11283,12 @@ body.sidebar-toggled footer.sticky-footer {
 .input-group input:focus {
   box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
 }
+
+.cke {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.cke_inner, .cke_contents {
+  max-width: 100% !important;
+}

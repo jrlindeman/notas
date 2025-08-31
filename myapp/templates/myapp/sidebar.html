@@ -26,9 +26,24 @@
     </a>
   </li>
 
+  <!-- Nav Item - Notas Libres -->
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'notas_libres' %}">
+      <i class="fas fa-file-alt"></i>
+      <span>Notas Libres</span>
+    </a>
+  </li>
+
+  <!-- Nav Item - Crear Nota Libre -->
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'crear_nota_libre' %}">
+      <i class="fas fa-plus"></i>
+      <span>Crear Nota Libre</span>
+    </a>
+  </li>
+
   <!-- Divider -->
   <hr class="sidebar-divider">
-
 
   <!-- Encabezado Categorías -->
   <div class="sidebar-heading">
@@ -49,6 +64,4 @@
         <span class="nav-link text-muted small">Sin categorías</span>
       </li>
   {% endif %}
-
-
 </ul>

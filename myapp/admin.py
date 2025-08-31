@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Categoria, Nota, Paso
+from .models import Categoria, Nota, Paso, NotaLibre
 
 @admin.register(Categoria)
 class CategoriaAdmin(admin.ModelAdmin):
@@ -17,3 +17,8 @@ class PasoAdmin(admin.ModelAdmin):
     list_display = ("id", "nota", "titulo", "orden")
     list_filter = ("nota",)
 
+
+@admin.register(NotaLibre)
+class NotaLibreAdmin(admin.ModelAdmin):
+    list_display = ("titulo", "categoria", "fecha_actualizacion")
+    search_fields = ("titulo", "contenido")
