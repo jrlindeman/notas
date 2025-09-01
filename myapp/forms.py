@@ -2,6 +2,7 @@ from django import forms
 from django.forms import inlineformset_factory
 from .models import Nota, Paso, Categoria
 from .models import NotaLibre
+from ckeditor_uploader.widgets import CKEditorUploadingWidget
 
 class NotaForm(forms.ModelForm):
     """
@@ -75,6 +76,7 @@ PasoFormSet = inlineformset_factory(
 
 
 class NotaLibreForm(forms.ModelForm):
+    contenido = forms.CharField(widget=CKEditorUploadingWidget())
     class Meta:
         model = NotaLibre
-        fields = ["titulo", "contenido", "categoria"]
+        fields = ['titulo', 'contenido', 'categoria']

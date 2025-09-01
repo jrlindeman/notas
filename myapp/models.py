@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 from ckeditor.fields import RichTextField
+from ckeditor_uploader.fields import RichTextUploadingField
 
 class Categoria(models.Model):
     nombre = models.CharField(max_length=200, unique=True)
@@ -81,7 +82,7 @@ class Paso(models.Model):
 
 class NotaLibre(models.Model):
     titulo = models.CharField(max_length=200)
-    contenido = RichTextField()
+    contenido = RichTextUploadingField()
     categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, blank=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)

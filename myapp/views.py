@@ -1,4 +1,5 @@
 import os
+import re
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -8,6 +9,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from thefuzz import fuzz
 from xhtml2pdf import pisa
+from bs4 import BeautifulSoup
 
 from .models import Nota, Paso, Categoria, NotaLibre
 from .forms import NotaForm, PasoFormSet, NotaLibreForm
@@ -290,8 +292,8 @@ def editar_nota_libre(request, pk):
 
 @login_required
 def detalle_nota_libre(request, pk):
-    nota = get_object_or_404(NotaLibre, pk=pk)
-    return render(request, "myapp/detalle_nota_libre.html", {"nota": nota})
+    nota_libre = get_object_or_404(NotaLibre, pk=pk)
+    return render(request, "myapp/detalle_nota_libre.html", {"nota_libre": nota_libre})
 
 @login_required
 def eliminar_nota_libre(request, pk):
@@ -300,3 +302,33 @@ def eliminar_nota_libre(request, pk):
         nota.delete()
         return redirect("notas_libres")
     return render(request, "myapp/eliminar_nota_libre.html", {"nota": nota})
+
+
+
+@login_required
+def exportar_nota_libre_pdf(request, pk):
+    nota_libre = get_object_or_404(NotaLibre, pk=pk)
+    template_path = 'myapp/pdf_template.html'
+    contenido = nota_libre.contenido
+
+    # Limpia el HTML con BeautifulSoup
+    soup = BeautifulSoup(contenido, "html.parser")
+    for img in soup.find_all("img"):
+        src = img.get("src", "")
+        if src.startswith("/media/"):
+            abs_path = os.path.join(settings.MEDIA_ROOT, src.replace('/media/', '').replace('/', os.sep))
+            abs_path = abs_path.replace('\\', '/')  # Solo barras normales
+            img.attrs = {}  # Elimina todos los atributos
+            img['src'] = abs_path  # Sin 'file:///' y sin barras invertidas
+
+    contenido_limpio = str(soup)
+    context = {'nota_libre': nota_libre, 'contenido_pdf': contenido_limpio}
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="nota_libre_{nota_libre.id}.pdf"'
+    template = get_template(template_path)
+    html = template.render(context)
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('Error al generar el PDF', status=500)
+    return response

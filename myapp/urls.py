@@ -44,7 +44,9 @@ urlpatterns = [
     # Redirección para compatibilidad con /accounts/login/
     path('accounts/login/', RedirectView.as_view(url='/login/', permanent=True)),
 
-
+    #Exportar nota libre a PDF
+    path('nota_libre/<int:pk>/exportar_pdf/', views.exportar_nota_libre_pdf, name='exportar_nota_libre_pdf'),
+    
     #vistas de una nota libre sin pasos 
     path("notas-libres/", views.lista_notas_libres, name="notas_libres"),
     path("notas-libres/crear/", views.crear_nota_libre, name="crear_nota_libre"),
@@ -53,4 +55,7 @@ urlpatterns = [
     path("notas-libres/<int:pk>/eliminar/", views.eliminar_nota_libre, name="eliminar_nota_libre"),
 
     path("ckeditor/", include("ckeditor_uploader.urls")),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

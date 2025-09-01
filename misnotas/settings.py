@@ -15,7 +15,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'myapp',
     'ckeditor',
-    'ckeditor_uploader', 
+    'ckeditor_uploader',
 ]
 
 MIDDLEWARE = [
@@ -41,7 +41,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "myapp.context_processors.categorias_context", 
+                "myapp.context_processors.categorias_context",
             ],
         },
     },
@@ -82,13 +82,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-CKEDITOR_UPLOAD_PATH = "uploads/"   # carpeta dentro de MEDIA_ROOT
+CKEDITOR_UPLOAD_PATH = "uploads/"
+CKEDITOR_IMAGE_BACKEND = "pillow"
+CKEDITOR_ALLOW_NONIMAGE_FILES = False
 
-# Opcional: configuración extra de CKEditor
 CKEDITOR_CONFIGS = {
-    "default": {
-        "toolbar": "full",
-        "height": 350,
-        "width": "100%",
+    'default': {
+        'toolbar': 'full',
+        'height': 300,
+        'width': '100%',
+        'extraPlugins': ','.join(['uploadimage', 'image2']),
     },
 }

@@ -18,32 +18,37 @@
     </style>
 </head>
 <body>
-    <h1>{{ nota.titulo }}</h1>
+    {% if nota_libre %}
+        <h1>{{ nota_libre.titulo }}</h1>
+        <div>{{ contenido_pdf|safe }}</div>
+    {% else %}
+        <h1>{{ nota.titulo }}</h1>
 
-    {% if nota.descripcion %}
-        <p>{{ nota.descripcion }}</p>
-    {% endif %}
+        {% if nota.descripcion %}
+            <p>{{ nota.descripcion }}</p>
+        {% endif %}
 
-    <hr>
-   {% comment %} <h2>Pasos</h2>{% endcomment %}
-    {% for paso in pasos %}
-        <div class="paso">
-            {% if paso.titulo %}<h3>{{ paso.titulo }}</h3>{% endif %}
-            {% if paso.descripcion %}<p>{{ paso.descripcion }}</p>{% endif %}
-            {% if paso.codigo %}
-                <div class="codigo">{{ paso.codigo|linebreaksbr }}</div>
-            {% endif %}
-            {% if paso.imagen_absoluta %}
-                <img src="{{ paso.imagen_absoluta }}" />
-            {% endif %}
+        <hr>
+       {% comment %} <h2>Pasos</h2>{% endcomment %}
+        {% for paso in pasos %}
+            <div class="paso">
+                {% if paso.titulo %}<h3>{{ paso.titulo }}</h3>{% endif %}
+                {% if paso.descripcion %}<p>{{ paso.descripcion }}</p>{% endif %}
+                {% if paso.codigo %}
+                    <div class="codigo">{{ paso.codigo|linebreaksbr }}</div>
+                {% endif %}
+                {% if paso.imagen_absoluta %}
+                    <img src="{{ paso.imagen_absoluta }}" />
+                {% endif %}
+            </div>
+        {% empty %}
+            <p>No hay pasos registrados.</p>
+        {% endfor %}
+
+        <div class="metadatos">
+            <p><strong>Creada:</strong> {{ nota.fecha_creacion|date:"d/m/Y H:i" }}</p>
+            <p><strong>Exportada por:</strong> José Lindeman</p>
         </div>
-    {% empty %}
-        <p>No hay pasos registrados.</p>
-    {% endfor %}
-
-    <div class="metadatos">
-        <p><strong>Creada:</strong> {{ nota.fecha_creacion|date:"d/m/Y H:i" }}</p>
-        <p><strong>Exportada por:</strong> José Lindeman</p>
-    </div>
+    {% endif %}
 </body>
 </html>
